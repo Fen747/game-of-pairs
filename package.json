@@ -1,0 +1,45 @@
+{
+	"name": "pairs",
+	"private": true,
+	"scripts": {
+		"start": "yarn start:full --exclude-archs web.browser.legacy",
+		"start:full": "meteor run --settings ./settings/development.json",
+		"start:fixtures": "FIXTURES=1 yarn start",
+		"debug": "DEBUG=1 yarn start --inspect=9229",
+		"debug:fixtures": "FIXTURES=1 yarn debug",
+		"debug:brk": "yarn start --inspect-brk=9229",
+		"clean:db": "rm -rf ./.meteor/local/db",
+		"db": "meteor mongo",
+		"db:clean": "rm -rf ./.meteor/local/db",
+		"test:meteor": "meteor test --once --driver-package meteortesting:mocha",
+		"test:meteor-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+		"test:ci": "IS_TESTING=1 start-server-and-test 'yarn start:full --allow-superuser' 3000 'yarn test:mocha'",
+		"test:mocha": "yarn ts-mocha ./.tests/**/*.serverSpec.ts",
+		"visualize": "meteor --production --extra-packages bundle-visualizer",
+		"lint": "echo \"[VALIDATE 1/2] --> Running ESlint\" &&  eslint --fix --cache --ext .js,.jsx,.ts,.tsx ./",
+		"lint:errors": "yarn lint --quiet",
+		"pretty": "echo \"[VALIDATE 2/2] --> Running Prettier\" && prettier --write \"{client,imports,server}/**/*.{ts,tsx,js,jsx}\"",
+		"validate": "clear && rm -rf storybook-static && npm-run-all clean-storybook lint pretty",
+		"validate:ci": "npm-run-all lint pretty",
+		"build-storybook": "clear && build-storybook",
+		"clean-storybook": "rm -rf storybook-static",
+		"gql:codegen": "graphql-codegen --config .codegen.yml",
+		"gql:forms": "ts-node ./.gqlScripts/forms/index.ts && yarn pretty",
+		"gql:all": "yarn gql:codegen && yarn gql:forms"
+	},
+	"dependencies": {
+		"@babel/runtime": "^7.8.4",
+		"clsx": "^1.1.0",
+		"meteor-node-stubs": "^1.0.0",
+		"react": "^16.13.0",
+		"react-dom": "^16.13.0",
+		"react-jss": "^10.1.1"
+	},
+	"meteor": {
+		"mainModule": {
+			"client": "client/main.tsx",
+			"server": "server/main.js"
+		},
+		"testModule": "tests/main.js"
+	}
+}

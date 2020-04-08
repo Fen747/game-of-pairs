@@ -1,0 +1,25 @@
+body {
+	padding: 0px;
+	font-family: sans-serif;
+}
+
+.flex {
+	display: flex;
+}
+
+.flex.wrap {
+	flex-wrap: wrap;
+}
+
+.flex.center-p {
+	justify-content: center;
+}
+
+.flex.center-s {
+	align-items: center;
+}
+
+.flex.center-b {
+	justify-content: center;
+	align-items: center;
+}
