@@ -18,14 +18,13 @@ import Board from './Board'
 import Score from './Score'
 
 // ###### 5 => Local app imports #########
-import { useTimeout, useInterval } from '../hooks'
+import { useTimeout, useOnMount } from '../hooks'
 
 interface IGameProps {}
 
 enum ACTIONS {
 	HIDE_ALL,
 	FIND_CARDS,
-	INC_TIME,
 	GENERATE_CARDS,
 	SELECT_CARD,
 	RESET,
@@ -38,7 +37,7 @@ type ReducerState = {
 	cards: Cards
 	selected: [number?, number?]
 	foundCardIndexes: number[]
-	spentTime: number
+	gameId: 0
 }
 
 type Payload = {
@@ -66,13 +65,14 @@ const initlaState: ReducerState = Object.freeze({
 	cards: [],
 	selected: [],
 	foundCardIndexes: [],
-	spentTime: 0,
+	won: true,
+	gameId: 0,
 })
 
 const reducer = (state: ReducerState, action: DispatchedAction) => {
 	switch (action.type) {
 		case ACTIONS.HIDE_ALL:
-			return { ...state, selected: [], showAll: false }
+			return { ...state, selected: [], showAll: false, won: false }
 
 		case ACTIONS.GENERATE_CARDS:
 			return { ...state, cards: action.payload.cards }
@@ -93,15 +93,14 @@ const reducer = (state: ReducerState, action: DispatchedAction) => {
 					state.selected.length < 2
 						? [...state.selected, action.payload.selectedIndex]
 						: state.selected,
+				won: state.foundCardIndexes.length === state.cards.length,
 			}
-
-		case ACTIONS.INC_TIME:
-			return { ...state, spentTime: state.spentTime + 0.1 }
 
 		case ACTIONS.RESET:
 			return {
 				...initlaState,
 				cards: createSetsOfPairs(action.payload.nbOfPairs),
+				gameId: state.gameId + 1,
 			}
 
 		default:
@@ -151,13 +150,21 @@ const createSetsOfPairs = (n = 5) => {
 	return cards
 }
 
+const defaultNumberOfPairs = 5
+
 export const GameContext = createContext(initlaState)
 
 const Game: React.FC<IGameProps> = (props) => {
 	const reducerTuple = useReducer<ReducerState>(reducer, initlaState)
 	const [state, dispatch] = reducerTuple
-	const won = state.foundCardIndexes.length === state.cards.length
-	const [nbOfPairs, setNbOfPairs] = useState(5)
+	const [nbOfPairs, setNbOfPairs] = useState(defaultNumberOfPairs)
+
+	useOnMount(() => {
+		dispatch({
+			type: ACTIONS.RESET,
+			payload: { nbOfPairs: defaultNumberOfPairs },
+		})
+	})
 
 	useTimeout(
 		() => {
@@ -165,16 +172,6 @@ const Game: React.FC<IGameProps> = (props) => {
 		},
 		2500,
 		[state.showAll],
-	)
-
-	useInterval(
-		() => {
-			if (!won) {
-				dispatch({ type: ACTIONS.INC_TIME })
-			}
-		},
-		100,
-		[state.showAll, won],
 	)
 
 	useEffect(() => {
@@ -219,7 +216,7 @@ const Game: React.FC<IGameProps> = (props) => {
 			<div className="flex">
 				<Board cards={state.cards} />
 				<div>
-					<div>{won ? <div>Congratulations !</div> : null}</div>
+					<div>{state.won ? <div>Congratulations !</div> : null}</div>
 					<label htmlFor="nbOfPairs">Number of pairs</label>
 					<input
 						id="nbOfPairs"
@@ -229,7 +226,7 @@ const Game: React.FC<IGameProps> = (props) => {
 						value={nbOfPairs}
 						onChange={(event) => setNbOfPairs(event.target.value)}
 					/>
-					<Score />
+					<Score key={state.gameId} />
 				</div>
 			</div>
 		</GameContext.Provider>

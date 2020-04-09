@@ -62,10 +62,10 @@ const Card: React.FC<ICardProps> = ({ number, index }) => {
 	const selected = state.showAll || state.selected.includes(index)
 	const found = state.foundCardIndexes.includes(index)
 	const handleClick = useCallback(() => {
-		if (!found) {
+		if (!found && !selected) {
 			actions.selectCard(index)
 		}
-	}, [number, actions.selectCard, found])
+	}, [number, actions.selectCard, found, index, selected])
 
 	return (
 		<div

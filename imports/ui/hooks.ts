@@ -30,3 +30,5 @@ export const useInterval = (cbk, delay = 1000, deps = []) => {
 		return () => clearInterval(intervalId)
 	}, [delay, ...deps])
 }
+
+export const useOnMount = (cbk) => useEffect(cbk, [])
