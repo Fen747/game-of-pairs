@@ -23,6 +23,7 @@ import { useTimeout, useOnMount } from '../hooks'
 interface IGameProps {}
 
 enum ACTIONS {
+	HIDE,
 	HIDE_ALL,
 	FIND_CARDS,
 	GENERATE_CARDS,
@@ -71,6 +72,9 @@ const initlaState: ReducerState = Object.freeze({
 
 const reducer = (state: ReducerState, action: DispatchedAction) => {
 	switch (action.type) {
+		case ACTIONS.HIDE:
+			return { ...state, selected: [], showAll: false }
+
 		case ACTIONS.HIDE_ALL:
 			return { ...state, selected: [], showAll: false, won: false }
 
@@ -78,12 +82,15 @@ const reducer = (state: ReducerState, action: DispatchedAction) => {
 			return { ...state, cards: action.payload.cards }
 
 		case ACTIONS.FIND_CARDS:
+			const foundCardIndexes = [
+				...state.foundCardIndexes,
+				...state.selected,
+			]
+
 			return {
 				...state,
-				foundCardIndexes: [
-					...state.foundCardIndexes,
-					...state.selected,
-				],
+				foundCardIndexes,
+				won: foundCardIndexes.length === state.cards.length,
 			}
 
 		case ACTIONS.SELECT_CARD:
@@ -93,7 +100,6 @@ const reducer = (state: ReducerState, action: DispatchedAction) => {
 					state.selected.length < 2
 						? [...state.selected, action.payload.selectedIndex]
 						: state.selected,
-				won: state.foundCardIndexes.length === state.cards.length,
 			}
 
 		case ACTIONS.RESET:
@@ -184,7 +190,7 @@ const Game: React.FC<IGameProps> = (props) => {
 			}
 
 			const timeoutId = setTimeout(
-				() => dispatch({ type: ACTIONS.HIDE_ALL }),
+				() => dispatch({ type: ACTIONS.HIDE }),
 				500,
 			)
 
